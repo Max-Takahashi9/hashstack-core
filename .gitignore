@@ -1,3 +1,10 @@
+#Additions
+*truffle-config.js
+node_modules/
+migrations/
+*package-lock.json
+*Migrations.sol
+
 # Logs
 logs
 *.log
