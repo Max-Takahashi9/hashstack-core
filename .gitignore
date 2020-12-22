@@ -1,5 +1,5 @@
 #Additions
-build/
+build/contracts/
 *truffle-config.js
 node_modules/
 migrations/
