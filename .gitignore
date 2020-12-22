@@ -6,6 +6,7 @@ migrations/
 *Migrations.sol
 *.json
 *! package.json
+build/contracts
 
 # Logs
 logs
