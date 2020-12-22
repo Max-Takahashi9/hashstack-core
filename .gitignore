@@ -1,12 +1,3 @@
-#Additions
-*truffle-config.js
-node_modules/
-migrations/
-*package-lock.json
-*Migrations.sol
-*.json
-*!package.json
-build/
 
 # Logs
 logs
@@ -112,3 +103,13 @@ dist
 
 # TernJS port file
 .tern-port
+
+#Additions
+*truffle-config.js
+node_modules/
+migrations/
+*package-lock.json
+*Migrations.sol
+*.json
+*!package.json
+build/
