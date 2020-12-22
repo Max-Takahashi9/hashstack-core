@@ -1,12 +1,12 @@
 #Additions
-build/contracts/
 *truffle-config.js
 node_modules/
 migrations/
 *package-lock.json
 *Migrations.sol
 *.json
-*! package.json
+*!package.json
+build/
 
 # Logs
 logs
