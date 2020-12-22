@@ -2,7 +2,8 @@
 *truffle-config.js
 node_modules/
 migrations/
-*.json
+*package.json
+*package-lock.json
 *Migrations.sol
 
 # Logs
