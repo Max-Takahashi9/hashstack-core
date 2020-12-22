@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/OpenDotSo/open-core#readme",
   "dependencies": {
-    "solc": "^0.8.0"
+    "solc": "^0.8.0",
+    "web3": "^1.3.1"
   }
 }
