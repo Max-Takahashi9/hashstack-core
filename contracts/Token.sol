@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 import ".././contracts/util/SafeMath.sol";
-// import "contracts/util/ReentrancyGuard.sol";
+import "contracts/util/ReentrancyGuard.sol";
 
-contract Token{
+contract Token is ReentrancyGuard {
 
   using SafeMath for uint256;
   address public admin;
@@ -50,7 +50,7 @@ contract Token{
       return _allowances[_owner][_spender];
   }
 
-    function transfer(address _to, uint256 _value)  public returns(bool success) {
+    function transfer(address _to, uint256 _value)  public nonReentrant() returns(bool success){
        require(_balances[msg.sender] >= _value, "Insufficient balance"); // check if there are enough tokens in the account.
        
        _balances[msg.sender] = _balances[msg.sender].sub(_value);
@@ -72,7 +72,7 @@ contract Token{
 
    }
 
-   function transferFrom(address _from, address _to, uint256 _value) public returns (bool success)  {
+   function transferFrom(address _from, address _to, uint256 _value) public nonReentrant() returns (bool success)  {
       //  require(_allowances[_from][msg.sender]>=_value, "Insufficient allowances");
        require(_allowances[_from][msg.sender]>=_value && _balances[_from]>= _value, "Insufficient allowances, or ownership balance");
 
