@@ -106,7 +106,7 @@ contract Token{
    }
 
    modifier onlyAdmin()	{
-	   require(msg.sender == admin, "No permissions");
+	   require(msg.sender == admin, "Only an admin can make this call");
 	   _;
    }
 
