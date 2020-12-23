@@ -13,7 +13,6 @@ contract Token is ReentrancyGuard {
   string public symbol;
   uint256 public _totalSupply; 
   uint256 public decimals;
-//   string version;// keeps a track of the contract version.
 
   mapping(address => uint256) _balances; 
   mapping(address => mapping(address => uint256)) _allowances;
@@ -21,7 +20,7 @@ contract Token is ReentrancyGuard {
   event Transfer(
       address indexed _from,
       address indexed _to,
-      uint256 indexed _value, // Number of tokens transfered.
+      uint256 indexed _value, 
       uint256 _timeStamp
   );
 
@@ -32,13 +31,13 @@ contract Token is ReentrancyGuard {
       uint256 _timeStamp
   );
 
-  constructor(string memory _name, uint256 _decimals, string memory _symbol, uint256 _initialSupply){
+  constructor(string memory _name, uint256 _decimals, string memory _symbol, uint256 _initialSupply,address _admin){
     name = _name;
     symbol = _symbol;
     decimals = _decimals;
     _balances[msg.sender] = _initialSupply; 
     _totalSupply = _initialSupply;
-	admin = msg.sender;
+    admin = _admin;
   }
 
 
@@ -106,8 +105,7 @@ contract Token is ReentrancyGuard {
    }
 
    modifier onlyAdmin()	{
-	   require(msg.sender == admin, "Inadequate permissions");
-	  //  require(msg.sender == admin, "Only an admin can make this call");
+	   require(msg.sender == admin, "Inadequate permission");
 	   _;
    }
 
