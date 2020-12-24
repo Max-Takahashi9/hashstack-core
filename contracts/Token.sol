@@ -1,127 +1,128 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import ".././contracts/util/SafeMath.sol";
+import "contracts/util/Context.sol";
 import "contracts/util/ReentrancyGuard.sol";
+import ".././contracts/util/SafeMath.sol";
 
-contract Token is ReentrancyGuard {
+contract Token is Context, ReentrancyGuard {
 
-  using SafeMath for uint256;
-  address admin;
+	using SafeMath for uint256;
+	address admin;
 
-  string name;
-  string symbol;
-  uint256 decimals;
-  uint256 totalSupply; 
+	string _name;
+	string _symbol;
+	uint256 _decimals;
+	uint256 _totalSupply; 
 
-  mapping(address => uint256) _balances; 
-  mapping(address => mapping(address => uint256)) _allowances;
+	mapping(address => uint256) _balances; 
+	mapping(address => mapping(address => uint256)) _allowances;
 
-  event Transfer(
-      address indexed _from,
-      address indexed _to,
-      uint256 indexed _value, 
-      uint256 _timeStamp
-  );
+	event Transfer(
+		address indexed _from,
+		address indexed _to,
+		uint256 indexed _value, 
+		uint256 _timeStamp
+	);
 
-  event Approval (
-      address indexed _owner,
-      address indexed _spender,
-      uint256 indexed _value,
-      uint256 _timeStamp
-  );
+	event Approval (
+		address indexed _owner,
+		address indexed _spender,
+		uint256 indexed _value,
+		uint256 _timeStamp
+	);
 
-  constructor(string memory _name, uint256 _decimals, string memory _symbol, uint256 _initialSupply,address _admin){
-    name = _name;
-    symbol = _symbol;
-    decimals = _decimals;
-    _balances[msg.sender] = _initialSupply; 
-    totalSupply = _initialSupply;
-    admin = _admin;
-  }
+	constructor(string memory name_, uint256 decimals_, string memory symbol_, uint256 initialSupply_){
+		_name = name_;
+		_symbol = symbol_;
+		_decimals = decimals_;
+		_balances[msg.sender] = initialSupply_; 
+		_totalSupply = initialSupply_;
+		admin = _msgSender();
+	}
 
-  function name() external view returns (string memory)	{
-	  return name;
-  }
-  
-  function symbol() external view returns (string memory){
-	  return symbol;
-  }
+	function name() external view returns (string memory)	{
+		return _name;
+	}
+	
+	function symbol() external view returns (string memory){
+		return _symbol;
+	}
 
-  function decimals() external view returns(uint256)	{
-	  return decimals;
-  }
+	function decimals() external view returns(uint256)	{
+		return _decimals;
+	}
 
-  function totalSupply() external view returns(uint256)	{
-	  return _totalSupply;
-  }
+	function totalSupply() external view returns(uint256)	{
+		return _totalSupply;
+	}
 
-  function balanceOf(address _account) external view returns (uint256)  {
-    return _balances[_account];
-  }
+	function balanceOf(address _account) external view returns (uint256)  {
+		return _balances[_account];
+	}
 
-  function allowances(address _owner,address _spender) external view returns(uint256)  {
-      return _allowances[_owner][_spender];
-  }
+	function allowances(address _owner,address _spender) external view returns(uint256)  {
+		return _allowances[_owner][_spender];
+	}
 
-    function transfer(address _to, uint256 _value)  external nonReentrant() returns(bool success){
-       require(_balances[msg.sender] >= _value, "Insufficient balance"); // check if there are enough tokens in the account.
-       
-       _balances[msg.sender] = _balances[msg.sender].sub(_value);
-       _balances[_to] =_balances[_to].add(_value);
-       
-       emit Transfer(msg.sender, _to, _value, block.timestamp);
-       return true;
-   }
+	function transfer(address _to, uint256 _value)  external nonReentrant() returns(bool){
+		require(_balances[msg.sender] >= _value, "Insufficient balance"); 
+		
+		_balances[msg.sender] = _balances[msg.sender].sub(_value);
+		_balances[_to] =_balances[_to].add(_value);
+		
+		emit Transfer(msg.sender, _to, _value, block.timestamp);
+		return true;
+	}
 
-   function approve(address _spender, uint256 _value) external returns(bool) {
-       
-       _allowances[msg.sender][_spender] = 0;
-       
-       require(_balances[msg.sender] >= _value , "Insuffficient balance, or you do not have necessary permissions");
-       _allowances[msg.sender][_spender] =_allowances[msg.sender][_spender].add(_value);
+	function approve(address _spender, uint256 _value) external returns(bool) {
+		
+		_allowances[msg.sender][_spender] = 0;
+		
+		require(_balances[msg.sender] >= _value , "Insuffficient balance, or you do not have necessary permissions");
+		_allowances[msg.sender][_spender] = _allowances[msg.sender][_spender].add(_value);
 
-       emit Approval(msg.sender, _spender, _value, block.timestamp);
-       return true;
+		emit Approval(msg.sender, _spender, _value, block.timestamp);
+		return true;
 
-   }
+	}
 
-   function transferFrom(address _from, address _to, uint256 _value) external nonReentrant() returns (bool success)  {
-      //  require(_allowances[_from][msg.sender]>=_value, "Insufficient allowances");
-       require(_allowances[_from][msg.sender]>=_value && _balances[_from]>= _value, "Insufficient allowances, or ownership balance");
+	function transferFrom(address _from, address _to, uint256 _value) external nonReentrant() returns (bool)  {
+		require(_allowances[_from][msg.sender]>=_value && _balances[_from]>= _value, "Insufficient allowances, or balance");
 
-       _balances[_from] = _balances[_from].sub(_value);
-       _balances[_to] = _balances[_to].add(_value);
+		_balances[_from] = _balances[_from].sub(_value);
+		_balances[_to] = _balances[_to].add(_value);
 
-       _allowances[_from][msg.sender] = _allowances[_from][msg.sender].sub(_value);
+		_allowances[_from][msg.sender] = _allowances[_from][msg.sender].sub(_value);
 
-       emit Transfer(_from, _to, _value, block.timestamp);
+		emit Transfer(_from, _to, _value, block.timestamp);
 
-       return true;
-   }
+		return true;
+	}
 
-   
-   function mint(address _to, uint256 amount) external onlyAdmin() returns(bool)   {
-       require(amount !=0, "you can not mint 0 tokens");
 
-       _balances[_to] = _balances[_to].add(amount);
-       _totalSupply = _totalSupply.add(amount);
+	function mint(address _to, uint256 amount) external onlyAdmin()  nonReentrant() returns(bool)   {
+		require(amount !=0, "you can not mint 0 tokens");
 
-       return true;
-   }
+		_balances[_to] = _balances[_to].add(amount);
+		_totalSupply = _totalSupply.add(amount);
 
-   function burn(address account,uint256 amount) external onlyAdmin() returns(bool success)  {
-       require(account !=address(0), "You can not burn tokens from this address");
+		return true;
+	}
 
-       _balances[account] = _balances[account].sub(amount);
-       _totalSupply = _totalSupply.sub(amount);
+	function burn(address account,uint256 amount) external onlyAdmin() nonReentrant() returns(bool)  {
+		require(account !=address(0), "You can not burn tokens from this address");
 
-       return true;
-   }
+		_balances[account] = _balances[account].sub(amount);
+		_totalSupply = _totalSupply.sub(amount);
 
-   modifier onlyAdmin()	{
-	   require(msg.sender == admin, "Inadequate permission");
-	   _;
-   }
+		return true;
+	}
 
-  }
+	modifier onlyAdmin()	{
+		require(msg.sender == admin, "Inadequate permission");
+		_;
+	}
+
+}
+
