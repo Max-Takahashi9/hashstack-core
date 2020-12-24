@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "contracts/util/Context.sol";
-import "contracts/util/ReentrancyGuard.sol";
+import ".././contracts/util/Context.sol";
+import ".././contracts/util/ReentrancyGuard.sol";
 import ".././contracts/util/SafeMath.sol";
 
 contract Token is Context, ReentrancyGuard {
@@ -128,4 +128,3 @@ contract Token is Context, ReentrancyGuard {
 	}
 
 }
-
