@@ -7,12 +7,12 @@ import "contracts/util/ReentrancyGuard.sol";
 contract Token is ReentrancyGuard {
 
   using SafeMath for uint256;
-  address public admin;
+  address admin;
 
-  string public name;
-  string public symbol;
-  uint256 public _totalSupply; 
-  uint256 public decimals;
+  string name;
+  string symbol;
+  uint256 decimals;
+  uint256 totalSupply; 
 
   mapping(address => uint256) _balances; 
   mapping(address => mapping(address => uint256)) _allowances;
@@ -36,20 +36,35 @@ contract Token is ReentrancyGuard {
     symbol = _symbol;
     decimals = _decimals;
     _balances[msg.sender] = _initialSupply; 
-    _totalSupply = _initialSupply;
+    totalSupply = _initialSupply;
     admin = _admin;
   }
 
+  function name() external view returns (string memory)	{
+	  return name;
+  }
+  
+  function symbol() external view returns (string memory){
+	  return symbol;
+  }
 
-  function balanceOf(address _account) public view returns (uint256)  {
+  function decimals() external view returns(uint256)	{
+	  return decimals;
+  }
+
+  function totalSupply() external view returns(uint256)	{
+	  return _totalSupply;
+  }
+
+  function balanceOf(address _account) external view returns (uint256)  {
     return _balances[_account];
   }
 
-  function allowances(address _owner,address _spender) public view returns(uint256)  {
+  function allowances(address _owner,address _spender) external view returns(uint256)  {
       return _allowances[_owner][_spender];
   }
 
-    function transfer(address _to, uint256 _value)  public nonReentrant() returns(bool success){
+    function transfer(address _to, uint256 _value)  external nonReentrant() returns(bool success){
        require(_balances[msg.sender] >= _value, "Insufficient balance"); // check if there are enough tokens in the account.
        
        _balances[msg.sender] = _balances[msg.sender].sub(_value);
@@ -59,7 +74,7 @@ contract Token is ReentrancyGuard {
        return true;
    }
 
-   function approve(address _spender, uint256 _value) public returns(bool) {
+   function approve(address _spender, uint256 _value) external returns(bool) {
        
        _allowances[msg.sender][_spender] = 0;
        
@@ -71,7 +86,7 @@ contract Token is ReentrancyGuard {
 
    }
 
-   function transferFrom(address _from, address _to, uint256 _value) public nonReentrant() returns (bool success)  {
+   function transferFrom(address _from, address _to, uint256 _value) external nonReentrant() returns (bool success)  {
       //  require(_allowances[_from][msg.sender]>=_value, "Insufficient allowances");
        require(_allowances[_from][msg.sender]>=_value && _balances[_from]>= _value, "Insufficient allowances, or ownership balance");
 
@@ -86,7 +101,7 @@ contract Token is ReentrancyGuard {
    }
 
    
-   function mint(address _to, uint256 amount) public onlyAdmin() returns(bool)   {
+   function mint(address _to, uint256 amount) external onlyAdmin() returns(bool)   {
        require(amount !=0, "you can not mint 0 tokens");
 
        _balances[_to] = _balances[_to].add(amount);
@@ -95,7 +110,7 @@ contract Token is ReentrancyGuard {
        return true;
    }
 
-   function burn(address account,uint256 amount) public onlyAdmin() returns(bool success)  {
+   function burn(address account,uint256 amount) external onlyAdmin() returns(bool success)  {
        require(account !=address(0), "You can not burn tokens from this address");
 
        _balances[account] = _balances[account].sub(amount);
