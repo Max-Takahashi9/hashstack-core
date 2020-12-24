@@ -32,7 +32,7 @@ contract Token is Context, ReentrancyGuard {
 		uint256 _timeStamp
 	);
 
-	constructor(string memory name_, uint256 decimals_, string memory symbol_, uint256 initialSupply_){
+	constructor(string memory name_, uint256 decimals_, string memory symbol_, uint256 initialSupply_)  {
 		_name = name_;
 		_symbol = symbol_;
 		_decimals = decimals_;
@@ -118,6 +118,9 @@ contract Token is Context, ReentrancyGuard {
 
 		return true;
 	}
+  fallback() external payable {}
+
+  receive() external payable {}
 
 	modifier onlyAdmin()	{
 		require(msg.sender == admin, "Inadequate permission");
