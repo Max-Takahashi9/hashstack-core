@@ -7,10 +7,12 @@ import ".././contracts/util/ReentrancyGuard.sol";
 contract Token is Context, ReentrancyGuard {
 	address admin;
 
-	string _name;
-	string _symbol;
+	bytes32  _name;
+	bytes32  _symbol;
 	uint256 _decimals;
 	uint256 _totalSupply; 
+
+  bool private _paused;
 
 	mapping(address => uint256) _balances; 
 	mapping(address => mapping(address => uint256)) _allowances;
@@ -29,20 +31,25 @@ contract Token is Context, ReentrancyGuard {
 		uint256 _timeStamp
 	);
 
-	constructor(string memory name_, uint256 decimals_, string memory symbol_, uint256 initialSupply_)  {
+  event PauseEvent  (
+    address indexed _pauser
+  );
+
+	constructor(bytes32 name_, uint256 decimals_, bytes32 symbol_, uint256 initialSupply_)  {
 		_name = name_;
 		_symbol = symbol_;
 		_decimals = decimals_;
     admin = _msgSender();
+    _paused = false;
 		_balances[msg.sender] = initialSupply_; 
 		_totalSupply = initialSupply_;
 	}
 
-	function name() external view returns (string memory)	{
+	function name() external view returns (bytes32 )	{
 		return _name;
 	}
 	
-	function symbol() external view returns (string memory){
+	function symbol() external view returns (bytes32 ){
 		return _symbol;
 	}
 
@@ -54,6 +61,10 @@ contract Token is Context, ReentrancyGuard {
 		return _totalSupply;
 	}
 
+  function contractState() external view returns(bool)  {
+    return _paused;
+  }
+
 	function balanceOf(address _account) external view returns (uint256)  {
 		return _balances[_account];
 	}
@@ -63,6 +74,8 @@ contract Token is Context, ReentrancyGuard {
 	}
 
 	function transfer(address _to, uint256 _value)  external nonReentrant() returns(bool){
+    _preTransferCheck();
+
 		require(_balances[msg.sender] >= _value, "Insufficient balance"); 
 		
 		_balances[msg.sender] -= _value;
@@ -73,17 +86,20 @@ contract Token is Context, ReentrancyGuard {
 	}
 
 	function approve(address _spender, uint256 _value) external returns(bool) {
+    _preTransferCheck();
 		
 		_allowances[msg.sender][_spender] = 0;
 		
 		require(_balances[msg.sender] >= _value , "Insuffficient balance, or you do not have necessary permissions");
-		_allowances[msg.sender][_spender] = _allowances[msg.sender][_spender].add(_value);
+		_allowances[msg.sender][_spender] +=_value;
 
 		emit Approval(msg.sender, _spender, _value, block.timestamp);
 		return true;
 	}
 
 	function transferFrom(address _from, address _to, uint256 _value) external nonReentrant() returns (bool)  {
+    _preTransferCheck();
+    
 		require(_allowances[_from][msg.sender]>=_value && _balances[_from]>= _value, "Insufficient allowances, or balance");
 
 		_balances[_from] -= _value;
@@ -96,12 +112,11 @@ contract Token is Context, ReentrancyGuard {
 		return true;
 	}
 
-
 	function mint(address _to, uint256 amount) external onlyAdmin()  nonReentrant() returns(bool)   {
 		require(amount !=0, "you can not mint 0 tokens");
 
-		_balances[_to] = _balances[_to].add(amount);
-		_totalSupply = _totalSupply.add(amount);
+		_balances[_to] += amount;
+		_totalSupply += amount;
 
 		return true;
 	}
@@ -109,18 +124,52 @@ contract Token is Context, ReentrancyGuard {
 	function burn(address account,uint256 amount) external onlyAdmin() nonReentrant() returns(bool)  {
 		require(account !=address(0), "You can not burn tokens from this address");
 
-		_balances[account] = _balances[account].sub(amount);
-		_totalSupply = _totalSupply.sub(amount);
+		_balances[account] -= amount;
+		_totalSupply -= amount;
 
 		return true;
 	}
+  
   fallback() external payable {}
 
   receive() external payable {}
 
-	modifier onlyAdmin()	{
+  function pause() external pauser() {
+    require(_paused == false, 'The contract is already paused');
+    _paused = true;
+
+    emit PauseEvent(_msgSender());
+  }
+
+
+  function unpause() external pauser() {
+    require(_paused == true, 'The contract is not paused');
+    _paused = false;
+
+    emit PauseEvent(_msgSender());
+  }
+
+  modifier pauser()	{
+		require(_msgSender() == admin, "Inadequate permission");
+		_;
+	}
+
+  modifier onlyAdmin()	{
 		require(msg.sender == admin, "Inadequate permission");
 		_;
 	}
 
+  function _preTransferCheck() internal view {
+    require(_paused == false, 'Sorry, the contract is paused. Token transfers are temporarily disabled');
+    this;
+  }
 }
+
+
+// What's pending
+// // 1. Capped tokens
+// // 2. AccessManagement.sol
+// // 3. Minter, Burner roles - Is it necessary?
+// // 4. Unit tests in Mocha, Chai
+// // 5. Deploy to public test-net, validate
+// // 6. Deploy to main-net
