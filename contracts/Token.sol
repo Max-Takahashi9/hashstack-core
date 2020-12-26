@@ -3,11 +3,8 @@ pragma solidity ^0.8.0;
 
 import ".././contracts/util/Context.sol";
 import ".././contracts/util/ReentrancyGuard.sol";
-import ".././contracts/util/SafeMath.sol";
 
 contract Token is Context, ReentrancyGuard {
-
-	using SafeMath for uint256;
 	address admin;
 
 	string _name;
@@ -68,8 +65,8 @@ contract Token is Context, ReentrancyGuard {
 	function transfer(address _to, uint256 _value)  external nonReentrant() returns(bool){
 		require(_balances[msg.sender] >= _value, "Insufficient balance"); 
 		
-		_balances[msg.sender] = _balances[msg.sender].sub(_value);
-		_balances[_to] =_balances[_to].add(_value);
+		_balances[msg.sender] -= _value;
+		_balances[_to] += _value;
 		
 		emit Transfer(msg.sender, _to, _value, block.timestamp);
 		return true;
@@ -90,10 +87,10 @@ contract Token is Context, ReentrancyGuard {
 	function transferFrom(address _from, address _to, uint256 _value) external nonReentrant() returns (bool)  {
 		require(_allowances[_from][msg.sender]>=_value && _balances[_from]>= _value, "Insufficient allowances, or balance");
 
-		_balances[_from] = _balances[_from].sub(_value);
-		_balances[_to] = _balances[_to].add(_value);
+		_balances[_from] -= _value;
+		_balances[_to] += _value;
 
-		_allowances[_from][msg.sender] = _allowances[_from][msg.sender].sub(_value);
+		_allowances[_from][msg.sender] -= _value;
 
 		emit Transfer(_from, _to, _value, block.timestamp);
 
