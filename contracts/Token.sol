@@ -33,9 +33,9 @@ contract Token is Context, ReentrancyGuard {
 		_name = name_;
 		_symbol = symbol_;
 		_decimals = decimals_;
+    admin = _msgSender();
 		_balances[msg.sender] = initialSupply_; 
 		_totalSupply = initialSupply_;
-		admin = _msgSender();
 	}
 
 	function name() external view returns (string memory)	{
@@ -81,7 +81,6 @@ contract Token is Context, ReentrancyGuard {
 
 		emit Approval(msg.sender, _spender, _value, block.timestamp);
 		return true;
-
 	}
 
 	function transferFrom(address _from, address _to, uint256 _value) external nonReentrant() returns (bool)  {
