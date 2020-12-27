@@ -7,8 +7,8 @@ import ".././contracts/util/ReentrancyGuard.sol";
 contract Token is Context, ReentrancyGuard {
 	address admin;
 
-	bytes32  _name;
-	bytes32  _symbol;
+	string  _name;
+	string  _symbol;
 	uint256 _decimals;
 	uint256 _totalSupply; 
 
@@ -35,7 +35,7 @@ contract Token is Context, ReentrancyGuard {
     address indexed _pauser
   );
 
-	constructor(bytes32 name_, uint256 decimals_, bytes32 symbol_, uint256 initialSupply_)  {
+	constructor(string memory name_, uint256 decimals_, string memory symbol_, uint256 initialSupply_)  {
 		_name = name_;
 		_symbol = symbol_;
 		_decimals = decimals_;
@@ -45,11 +45,11 @@ contract Token is Context, ReentrancyGuard {
 		_totalSupply = initialSupply_;
 	}
 
-	function name() external view returns (bytes32 )	{
+	function name() external view returns (string memory)	{
 		return _name;
 	}
 	
-	function symbol() external view returns (bytes32 ){
+	function symbol() external view returns (string memory){
 		return _symbol;
 	}
 
