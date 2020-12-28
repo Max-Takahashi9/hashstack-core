@@ -9,79 +9,102 @@ contract AccessControl is Context{
 
   struct RoleData  {
     mapping(bytes32 => address) _roleRegistry; //mapping of all roles & addresses
+    mapping (bytes32 => uint256) _indexes;
     bytes32[] _roleList; //list of roles
-    address[] _accountList; // list of addresses with a role.
-    mapping (address => uint256) _indexes;
+  }
+
+  address adminAddress;
+  bytes32 adminAccessRegistry;
+
+  struct AdminRegistry  {
+    mapping(bytes32 => address) _adminRegistry; //There can not be multiple admins for a contract.
+    mapping(bytes32 => uint256) _adminIndex;
+    bytes32[] _adminRoleList;
   }
 
   mapping (bytes32 => RoleData) private _roles;
 
-  address private adminAddress;
-  bytes32 admin;
 
   event RoleAdminChanged(bytes32 indexed role, address indexed previousAdmin, address indexed newAdmin);
 
   event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender);
 
   event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender);
+  
+  event AdminRoleGranted(bytes32 indexed role, address indexed account, address indexed sender);
+  event AdminRoleRevoked(bytes32 indexed role, address indexed account, address indexed sender);
 
-  constructor(address account) {
-    adminAddress = account;
-    _updateRoleData(admin, adminAddress);
-    emit RoleAdminChanged(admin, address(0), adminAddress);
+  constructor(address account_) {
+    adminAddress = account_;
+    _addAdmin(adminAccessRegistry, adminAddress);
   }
 
+  function _addAdmin(bytes32 role, address account) internal {
+    AdminRegistry._adminRegistry[role] = account;
+    AdminRegistry._adminRoleList.push(role);
+    AdminRegistry._adminIndex[role] = AdminRegistry._adminRoleList.length;
+    emit AdminRoleGranted(role, account, _msgSender());
+  }
 
-  function hasRole(bytes32 role, address account) external view returns (bool)  {
-    if (_roles[role]._indexes[account]!=0)  {
+  function addAdmin(bytes32 role, address account) public adminAccess() {
+    require(!hasAdminRole(role, account), "Role already exists. Please create a different role");
+    _addAdmin(role, account);
+  }
+
+  function hasAdminRole(bytes32 role, address account) external view returns (bool)  {
+    _hasAdminRole(role, account);
+  }
+
+  function _hasAdminRole(bytes32 role, address account) internal view returns (bool)  {
+    if (AdminRegistry._adminIndex[role]!=0)  {
       return true;
     }
     return false;
   }
 
-  //Decide on the below functio
-  function getRoleMemberCount(bytes32 role) external view returns (uint256) {
-    return RoleData._rolesLists.length;
-  }
+  function removeAdmin(bytes32 role, address account) public adminAccess()  {
+    require(hasAdminRole(role, account), "Role does not exist.");
 
-  
-  // Fetch the address of the role member
-  function getRoleMember(bytes32 role, uint256 index) external view returns (address) {
-    return _roles[role]._roleRegistry[_roleList[index]]; // returns address,which is _accountList[index].
-  }
-
-  function getAdmin() external view returns (address) {
-    return adminAddress;
+    _revokeAdmin(role, account);
   }
 
 
-  function addRole(bytes32 role, address account) external adminAccess() {
-    require(_roles[role]._indexes[account]!=0, "Address already has a role");
-    
-    return _addRole(role, account);
+  function _revokeAdmin(bytes32 role, address account) internal {
+
+    delete AdminRegistry._adminRegistry[role];
+
+    uint256 _value = AdminRegistry._adminIndex[role];
+    uint256 _toDeleteIndex = _value - 1;
+
+    uint256 _lastValue = AdminRegistry._adminRoleList.length;
+    uint256 _lastValueIndex = _lastValue - 1;
+
+    bytes32 lastRole = AdminRegistry._adminRoleList[_lastValueIndex];
+
+    AdminRegistry._adminRoleList[_toDeleteIndex] = lastRole; // Index assignment
+    AdminRegistry._adminIndex[lastRole] = _toDeleteIndex+1;
+
+    AdminRegistry._adminRoleList.pop();
+    delete AdminRegistry._adminIndex[role];
+
+    emit AdminRoleRevoked(role, account, _msgSender());
+
   }
 
-  function _addRole(bytes32 role, address account) internal {
-    _roles[role]._indexes[account] = RoleData._accountList.length;
-    _roles[role]._roleList[RoleData._accountList.length]; // updates _roleList
-    _roles[role]._accountList[RoleData._accountList.length]; // updates _accountList
-    _roles[role]._roleRegistry[_roleList[RoleData._accountList.length]] = _roles[role]._accountList[RoleData._accountList.length];
+  function adminRoleTransfer(bytes32 role, address oldOwner, address newOwner)  public adminAccess()  {
+    _addAdmin(role, newOwner);
 
-    emit RoleGranted(role, account, _msgSender());
+    //Needs working
   }
+
+
+  function addMember()  {}
+  function removeMember() {}
+  function renounceMemberRole() {}
 
 
   modifier adminAccess()  {
-    require(_msgSender() == admin, "Inadequate permissions brother");
+    require(_msgSender() == adminAddress, "Inadequate permissions brother");
     _;
   }
 }
-
-// struct RoleData  {
-//     mapping(bytes32 => address) _roleRegistry; //mapping of all roles & addresses
-//     bytes32[] _roleList; //list of roles
-//     address[] _accountList; // list of addresses with a role.
-//     mapping (address => uint256) _indexes;
-//   }
-
-//   mapping (bytes32 => RoleData) private _roles;
