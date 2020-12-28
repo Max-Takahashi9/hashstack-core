@@ -2,17 +2,20 @@
 pragma solidity ^0.8.0;
 
 import ".././contracts/util/Context.sol";
-import ".././contracts/util/ReentrancyGuard.sol";
+import ".././contracts/TokenAccess.sol";
 
-contract Token is Context, ReentrancyGuard {
+contract Token is Context, TokenAccess {
 	address admin;
 
 	string  _name;
 	string  _symbol;
 	uint256 _decimals;
+
 	uint256 _totalSupply; 
+  uint256 _cappedSupply;
 
   bool private _paused;
+  bool internal _reentrant = false;
 
 	mapping(address => uint256) _balances; 
 	mapping(address => mapping(address => uint256)) _allowances;
@@ -35,14 +38,17 @@ contract Token is Context, ReentrancyGuard {
     address indexed _pauser
   );
 
-	constructor(string memory name_, uint256 decimals_, string memory symbol_, uint256 initialSupply_)  {
+	constructor(string memory name_, uint256 decimals_, string memory symbol_, uint256 cappedSupply_, uint256 initialSupply_)  {
 		_name = name_;
 		_symbol = symbol_;
 		_decimals = decimals_;
-    admin = _msgSender();
+		admin = TokenAccess.admin;
+
+		_totalSupply = initialSupply_;
+    _cappedSupply = cappedSupply_;
+
     _paused = false;
 		_balances[msg.sender] = initialSupply_; 
-		_totalSupply = initialSupply_;
 	}
 
 	function name() external view returns (string memory)	{
@@ -113,7 +119,8 @@ contract Token is Context, ReentrancyGuard {
 	}
 
 	function mint(address _to, uint256 amount) external onlyAdmin()  nonReentrant() returns(bool)   {
-		require(amount !=0, "you can not mint 0 tokens");
+		require(_totalSupply <= _cappedSupply, "Exceeds capped supply");
+    require(amount !=0 & _to != address(0), "you can not mint 0 tokens");
 
 		_balances[_to] += amount;
 		_totalSupply += amount;
@@ -149,19 +156,27 @@ contract Token is Context, ReentrancyGuard {
     emit PauseEvent(_msgSender());
   }
 
-  modifier pauser()	{
-		require(_msgSender() == admin, "Inadequate permission");
-		_;
-	}
-
-  modifier onlyAdmin()	{
-		require(msg.sender == admin, "Inadequate permission");
-		_;
-	}
 
   function _preTransferCheck() internal view {
     require(_paused == false, 'Sorry, the contract is paused. Token transfers are temporarily disabled');
     this;
+  }
+
+  modifier pauser()	{
+		require(_msgSender() == TokenAccess.admin, "Inadequate permission");
+		_;
+	}
+
+  modifier onlyAdmin()	{
+		require(_msgSender() == TokenAccess.admin, "Inadequate permission");
+		_;
+	}
+
+  modifier nonReentrant() {
+    require(_reentrant = false, "ReentrancyGuard: reentrant call");
+    _reentrant = true;
+    _;
+    _reentrant = false;
   }
 }
 
