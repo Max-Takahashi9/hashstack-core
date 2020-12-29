@@ -113,3 +113,4 @@ migrations/
 *.json
 *!package.json
 build/
+*contracts/TimeLock.sol
