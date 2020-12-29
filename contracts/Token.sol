@@ -23,7 +23,7 @@ contract Token is Context, TokenAccess {
 	event Approved (address indexed _owner,address indexed _spender,uint256 indexed _value,uint256 _timeStamp);
 
   event PauseEvent (address indexed _pauser);
-  event Minted(address indexed _from, address _to, uint256 amount);
+  event Minted(address indexed _from, address indexed _to, uint256 amount);
   event Burned(address indexed _from, address _to, uint256 amount);
 
 	constructor(string memory name_, uint256 decimals_, string memory symbol_, uint256 cappedSupply_, uint256 initialSupply_) TokenAccess(admin_, minter_, burner_,pauser_) {
