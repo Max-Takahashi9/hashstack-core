@@ -3,26 +3,26 @@ pragma solidity ^0.8.0;
 import "contracts/util/Address.sol";
 import "contracts/util/Context.sol";
 
-contract AccessControl is Context{
+contract AccessControl is Context {
 
   using Address for address; // can not use a smart contract for any roleAccess
+
+  address private adminAddress;
+  bytes32 private adminAccess;
 
   struct RoleData  {
     mapping(bytes32 => address) _roleRegistry; //mapping of all roles & addresses
     mapping (bytes32 => uint256) _indexes;
-    bytes32[] _roleList; //list of roles
+    bytes32[] _roleList; 
   }
 
-  address adminAddress;
-  bytes32 adminAccess;
+  mapping(bytes32 => RoleData) private _roles;
 
   struct AdminRegistry  {
     mapping(bytes32 => address) _adminRegistry; // List of roles & addresses
     mapping(bytes32 => uint256) _adminIndex; 
     bytes32[] _adminRoleList;
   }
-
-  mapping (bytes32 => RoleData) private _roles;
 
   event AdminRoleGranted(bytes32 indexed role, address indexed account, address indexed sender);
   event AdminRoleRevoked(bytes32 indexed role, address indexed account, address indexed sender);
@@ -35,7 +35,7 @@ contract AccessControl is Context{
     _addAdmin(adminAccess, adminAddress);
   }
 
-  function addAdmin(bytes32 role, address account) public onlyAdmin(adminAccess, adminAddress) {
+  function addAdmin(bytes32 role, address account) external onlyAdmin(adminAccess, adminAddress) {
     require(!hasAdminRole(role, account), "Role already exists. Please create a different role");
     _addAdmin(role, account);
   }
@@ -49,18 +49,18 @@ contract AccessControl is Context{
     emit AdminRoleGranted(role, account, _msgSender());
   }
 
-  function hasAdminRole(bytes32 role, address account) public view returns (bool)  {
-    _hasAdminRole(role, account);
+  function hasAdminRole(bytes32 role, address account) external view returns(bool)  {
+    return _hasAdminRole(role, account);
   }
 
-  function _hasAdminRole(bytes32 role, address account) internal view returns (bool)  {
+  function _hasAdminRole(bytes32 role, address account) internal view returns(bool)  {
     if (AdminRegistry._adminIndex[role]!=0)  {
       return true;
     }
     return false;
   }
 
-  function removeAdmin(bytes32 role, address account) public onlyAdmin(adminAccess, adminAddress)  {
+  function removeAdmin(bytes32 role, address account) external onlyAdmin(adminAccess, adminAddress)  {
     require(hasAdminRole(role, account), "Role does not exist.");
 
     _revokeAdmin(role, account);
@@ -90,14 +90,14 @@ contract AccessControl is Context{
 
   }
 
-  function adminRoleTransfer(bytes32 role, address oldAccount, address newAccount)  public onlyAdmin(adminAccess, adminAddress)  {
+  function adminRoleTransfer(bytes32 role, address oldAccount, address newAccount)  external onlyAdmin(adminAccess, adminAddress)  {
     require(hasAdminRole(role, oldAccount), "Role already exists. Please create a different role");
 
     _revokeAdmin(role, oldAccount);
     _addAdmin(role, newAccount);
   }
 
-  function addRole(bytes32 role, address account) public onlyAdmin(adminAccess, adminAddress) {
+  function addRole(bytes32 role, address account) external onlyAdmin(adminAccess, adminAddress) {
     require(!hasRole(role, account), "Role already exists. Please create a different role");
     _addRole(role, account);
   }
@@ -111,11 +111,11 @@ contract AccessControl is Context{
     emit RoleGranted(role, account, _msgSender());
   }
 
-  function hasRole(bytes32 role, address account) public view returns (bool)  {
-    _hasAdminRole(role, account);
+  function hasRole(bytes32 role, address account) external view returns(bool)  {
+    return _hasRole(role, account);(role, account);
   }
 
-  function _hasRole(bytes32 role, address account) internal view returns (bool)  {
+  function _hasRole(bytes32 role, address account) internal view returns(bool)  {
     if (_roles[role]._indexes[role] !=0)  {
       return true;
     }
@@ -123,7 +123,7 @@ contract AccessControl is Context{
   }
 
 
-  function removeRole(bytes32 role, address account) public onlyAdmin(adminAccess, adminAddress) {
+  function removeRole(bytes32 role, address account) external onlyAdmin(adminAccess, adminAddress) {
     require(hasRole(role, account), "Role does not exist.");
 
     _revokeRole(role, account);
@@ -152,7 +152,7 @@ contract AccessControl is Context{
 
   }
 
-  function transferRole(bytes32 role, address oldAccount, address newAccount)  public {
+  function transferRole(bytes32 role, address oldAccount, address newAccount)  external {
     require(hasRole(role, oldAccount), "Role does not exist.");
     require(_msgSender() == oldAccount || _msgSender() == adminAddress, "Inadequate permissions");
 
@@ -167,7 +167,7 @@ contract AccessControl is Context{
 
     _revokeRole(role, account);
   }
-  
+
   modifier onlyAdmin(bytes32 role_, address account_)  {
     require(hasAdminRole(role, account), "Role does not exist.");
     _;

@@ -1,42 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "contracts/AccessManagement.sol";
+import ".././contracts/Access/AccessControl.sol";
 
-contract TokenAccess is AccessManagement  {
+contract TokenAccess is AccessControl  {
 
-  address minter;
-  address burner;
-  address admin;
-  address pauser;
+  address private minter;
+  address private burner;
+  address private admin;
+  address private pauser;
 
-  event RoleAdminChanged(
-    bytes32 indexed role, 
-    bytes32 indexed previousAdminRole, 
-    bytes32 indexed newAdminRole
-  );
-
-  event RoleGranted(
-    bytes32 indexed role, 
-    address indexed account, 
-    address indexed sender
-  );
-
-  event RoleRevoked(
-    bytes32 indexed role, 
-    address indexed account, 
-    address indexed sender
-  );
-
-  constructor() {
-    admin = _msgSender();
-    minter = _msgSender();
-    burner = _msgSender();
-    pauser = _msgSender();
-  }
-
-  function hasRole(bytes32 role, address account) public view returns (bool) {
-    return _roles[role].members.contains(account);
+  bytes32 adminToken;
+  constructor (address admin_, address minter_, address burner_, address pauser_) {
+    
   }
 
 }
