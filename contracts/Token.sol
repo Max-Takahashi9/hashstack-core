@@ -6,108 +6,108 @@ import ".././contracts/TokenAccess.sol";
 
 contract Token is Context, TokenAccess {
 
-	string  public  _name;
-	string  public  _symbol;
-	uint256 public  _decimals;
+  string  public  _name;
+  string  public  _symbol;
+  uint256 public  _decimals;
 
-	uint256 public _totalSupply; 
+  uint256 public _totalSupply; 
   uint256 public  _cappedSupply;
 
   bool public _paused;
   bool internal _reentrant = false;
 
-	mapping(address => uint256) _balances; 
-	mapping(address => mapping(address => uint256)) _allowances;
+  mapping(address => uint256) _balances; 
+  mapping(address => mapping(address => uint256)) _allowances;
 
-	event Transfer(address indexed _from,address indexed _to,uint256 indexed _value, uint256 _timeStamp);
-	event Approved (address indexed _owner,address indexed _spender,uint256 indexed _value,uint256 _timeStamp);
+  event Transfer(address indexed _from,address indexed _to,uint256 indexed _value, uint256 _timeStamp);
+  event Approved (address indexed _owner,address indexed _spender,uint256 indexed _value,uint256 _timeStamp);
 
   event PauseEvent (address indexed _pauser);
   event Minted(address indexed _from, address indexed _to, uint256 amount);
   event Burned(address indexed _from, address _to, uint256 amount);
 
-	constructor(string memory name_, uint256 decimals_, string memory symbol_, uint256 cappedSupply_, uint256 initialSupply_) TokenAccess(admin_, minter_, burner_,pauser_) {
-		_name = name_;
-		_symbol = symbol_;
-		_decimals = decimals_;
+  constructor(string memory name_, uint256 decimals_, string memory symbol_, uint256 cappedSupply_, uint256 initialSupply_) TokenAccess(admin_, minter_, burner_,pauser_) {
+    _name = name_;
+    _symbol = symbol_;
+    _decimals = decimals_;
     _paused = false;
 
-		_totalSupply = initialSupply_;
+    _totalSupply = initialSupply_;
     _cappedSupply = cappedSupply_;
-		_balances[adminAddress] = initialSupply_;
-	}
+    _balances[adminAddress] = initialSupply_;
+  }
 
   fallback() external payable {}
 
   receive() external payable {}
 
-	function balanceOf(address _account) external view returns (uint256)  {
-		return _balances[_account];
-	}
+  function balanceOf(address _account) external view returns (uint256)  {
+    return _balances[_account];
+  }
 
-	function allowances(address _owner,address _spender) external view returns(uint256)  {
-		return _allowances[_owner][_spender];
-	}
+  function allowances(address _owner,address _spender) external view returns(uint256)  {
+    return _allowances[_owner][_spender];
+  }
 
-	function transfer(address _to, uint256 _value)  external nonReentrant() returns(bool){
+  function transfer(address _to, uint256 _value)  external nonReentrant() returns(bool){
     require(_preTransferCheck(), "This contract is temporarily paused. Regret the inconvenience");
-		require(_balances[_msgSender()] >= _value, "Insufficient balance"); 
-		
-		_balances[_msgSender()] -= _value;
-		_balances[_to] += _value;
-		
-		emit Transfer(_msgSender(), _to, _value, block.timestamp);
+    require(_balances[_msgSender()] >= _value, "Insufficient balance"); 
+    
+    _balances[_msgSender()] -= _value;
+    _balances[_to] += _value;
+    
+    emit Transfer(_msgSender(), _to, _value, block.timestamp);
 
-		return true;
-	}
+    return true;
+  }
 
-	function approve(address _spender, uint256 _value) external returns(bool) {
+  function approve(address _spender, uint256 _value) external returns(bool) {
     require(_preTransferCheck(), "This contract is temporarily paused. Regret the inconvenience");
-		_allowances[_msgSender()][_spender] = 0;
-		
-		require(_balances[_msgSender()] >= _value , "Insuffficient balance, or you do not have necessary permissions");
-		_allowances[_msgSender()][_spender] +=_value;
+    _allowances[_msgSender()][_spender] = 0;
+    
+    require(_balances[_msgSender()] >= _value , "Insuffficient balance, or you do not have necessary permissions");
+    _allowances[_msgSender()][_spender] +=_value;
 
-		emit Approved(_msgSender(), _spender, _value, block.timestamp);
-		return true;
-	}
+    emit Approved(_msgSender(), _spender, _value, block.timestamp);
+    return true;
+  }
 
-	function transferFrom(address _from, address _to, uint256 _value) external nonReentrant() returns (bool)  {
+  function transferFrom(address _from, address _to, uint256 _value) external nonReentrant() returns (bool)  {
     require(_preTransferCheck(), "This contract is temporarily paused. Regret the inconvenience");
-		require(_allowances[_from][_msgSender()]>=_value && _balances[_from]>= _value, "Insufficient allowances, or balance");
+    require(_allowances[_from][_msgSender()]>=_value && _balances[_from]>= _value, "Insufficient allowances, or balance");
 
-		_balances[_from] -= _value;
-		_balances[_to] += _value;
+    _balances[_from] -= _value;
+    _balances[_to] += _value;
 
-		_allowances[_from][_msgSender()] -= _value;
+    _allowances[_from][_msgSender()] -= _value;
 
-		emit Transfer(_from, _to, _value, block.timestamp);
+    emit Transfer(_from, _to, _value, block.timestamp);
 
-		return true;
-	}
+    return true;
+  }
 
-	function mint(address _to, uint256 amount) external onlyMinter() nonReentrant() returns(bool)   {
+  function mint(address _to, uint256 amount) external onlyMinter() nonReentrant() returns(bool)   {
     require(_msgSender() == adminAddress || _msgSender() == minterAddress, "You do not have permission to mint new tokens");
-		require(_totalSupply <= _cappedSupply, "Exceeds capped supply");
+    require(_totalSupply <= _cappedSupply, "Exceeds capped supply");
     require(amount !=0 & _to != address(0), "you can not mint 0 tokens");
 
-		_balances[_to] += amount;
-		_totalSupply += amount;
+    _balances[_to] += amount;
+    _totalSupply += amount;
 
-		return true;
-	}
+    return true;
+  }
 
-	function burn(address account,uint256 amount) external onlyBurner() nonReentrant() returns(bool)  {
-		require(account !=address(0), "You can not burn tokens from this address");
+  function burn(address account,uint256 amount) external onlyBurner() nonReentrant() returns(bool)  {
+    require(account !=address(0), "You can not burn tokens from this address");
     require(_msgSender() == adminAddress || _msgSender() == burnerAddress, "You do not have permission to mint new tokens");
 
-		_balances[account] -= amount;
-		_totalSupply -= amount;
+    _balances[account] -= amount;
+    _totalSupply -= amount;
     
     emit Transfer(account, address(0), amount);
 
-		return true;
-	}
+    return true;
+  }
   
   function pause() external onlyPauser() {
     require(_msgSender() == pauserAddress || _msgSender() == adminAddress, "You do not have permission to mint new tokens");
