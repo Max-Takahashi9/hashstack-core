@@ -163,7 +163,7 @@ contract Token is Context, TokenAccess {
   }
 
   modifier pauser()	{
-		require(_msgSender() == TokenAccess.admin, "Inadequate permission");
+		require(_msgSender() == TokenAccess.pauser, "Inadequate permission");
 		_;
 	}
 
