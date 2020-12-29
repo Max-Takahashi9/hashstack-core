@@ -42,8 +42,27 @@ contract TokenAccess{
     access.renounceRole(role, account);
   }
 
-  modifier onlyAdmin(bytes32 role, address account)  {
-    require(access.hasAdminRole(role, account), "Role does not exist.");
+  function hasAdminRole(bytes32 role, address account) private view returns(bool) {
+    require(access.hasAdminRole(role, account), "Does not have an admin role.");
+  }
+
+  modifier onlyAdmin()  {
+    require(access.hasAdminRole(adminToken, adminAddress), "Role does not exist.");
+    _;
+  }
+
+  modifier onlyPauser()  {
+    require(access.hasRole(pauser, pauserAddress) || access.hasAdminRole(adminToken, adminAddress), "Role does not exist.");
+    _;
+  }
+
+  modifier onlyMinter() {
+    require(access.hasRole(minter, minterAddress) || access.hasAdminRole(adminToken, adminAddress), "Role does not exist.");
+    _;
+  }
+
+  modifier onlyBurner() {
+    require(access.hasRole(burner, burnerAddress) || access.hasAdminRole(adminToken, adminAddress), "Role does not exist.");
     _;
   }
 
