@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import ".././contracts/Access/AccessControl.sol";
+import ".././contracts/access/AccessControl.sol";
 
 contract TokenAccess{
 

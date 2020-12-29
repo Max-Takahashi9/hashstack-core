@@ -41,26 +41,6 @@ contract Token is Context, TokenAccess {
 
   receive() external payable {}
 
-	// function name() external view returns (string memory)	{
-	// 	return _name;
-	// }
-	
-	// function symbol() external view returns (string memory){
-	// 	return _symbol;
-	// }
-
-	// function decimals() external view returns(uint256)	{
-	// 	return _decimals;
-	// }
-
-	// function totalSupply() external view returns(uint256)	{
-	// 	return _totalSupply;
-	// }
-
-  // function contractState() external view returns(bool)  {
-  //   return _paused;
-  // } 
-
 	function balanceOf(address _account) external view returns (uint256)  {
 		return _balances[_account];
 	}
@@ -168,12 +148,3 @@ contract Token is Context, TokenAccess {
     _reentrant = false;
   }
 }
-
-
-// What's pending
-// // 1. Capped tokens
-// // 2. AccessManagement.sol
-// // 3. Minter, Burner roles - Is it necessary?
-// // 4. Unit tests in Mocha, Chai
-// // 5. Deploy to public test-net, validate
-// // 6. Deploy to main-net
