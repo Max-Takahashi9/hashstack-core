@@ -21,8 +21,8 @@ contract TokenAccess{
 
   constructor (address admin_, address minter_, address burner_, address pauser_) {
     adminAddress = admin_;
-    minterAddress = _minter;
-    burnerAddress = _burner;
+    minterAddress = minter_;
+    burnerAddress = burner_;
     pauserAddress = pauser_;
 
     access._addAdmin(adminToken, adminAddress);
