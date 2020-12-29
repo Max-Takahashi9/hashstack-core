@@ -51,6 +51,9 @@ contract Token is Context, TokenAccess {
 		_balances[msg.sender] = initialSupply_; 
 	}
 
+  fallback() external payable {}
+  receive() external payable {}
+
 	function name() external view returns (string memory)	{
 		return _name;
 	}
@@ -137,9 +140,7 @@ contract Token is Context, TokenAccess {
 		return true;
 	}
   
-  fallback() external payable {}
 
-  receive() external payable {}
 
   function pause() external pauser() {
     require(_paused == false, 'The contract is already paused');
