@@ -22,7 +22,7 @@ contract Token is Context, TokenAccess {
   event Transfer(address indexed _from,address indexed _to,uint256 indexed _value, uint256 _timeStamp);
   event Approved (address indexed _owner,address indexed _spender,uint256 indexed _value,uint256 _timeStamp);
 
-  event PauseEvent (address indexed _pauser);
+  event PauseState (address indexed _pauser, _paused, uint256 _timeStamp);
   event Minted(address indexed _from, address indexed _to, uint256 amount);
   event Burned(address indexed _from, address _to, uint256 amount);
 
@@ -37,9 +37,13 @@ contract Token is Context, TokenAccess {
     _balances[adminAddress] = initialSupply_;
   }
 
-  fallback() external payable {}
+  fallback() external payable {
+    adminAddress.transfer(_msgValue());
+  }
 
-  receive() external payable {}
+  receive() external payable {
+    adminAddress.transfer(_msgValue());
+  }
 
   function balanceOf(address _account) external view returns (uint256)  {
     return _balances[_account];
@@ -87,7 +91,6 @@ contract Token is Context, TokenAccess {
   }
 
   function mint(address _to, uint256 amount) external onlyMinter() nonReentrant() returns(bool)   {
-    require(_msgSender() == adminAddress || _msgSender() == minterAddress, "You do not have permission to mint new tokens");
     require(_totalSupply <= _cappedSupply, "Exceeds capped supply");
     require(amount !=0 & _to != address(0), "you can not mint 0 tokens");
 
@@ -99,7 +102,6 @@ contract Token is Context, TokenAccess {
 
   function burn(address account,uint256 amount) external onlyBurner() nonReentrant() returns(bool)  {
     require(account !=address(0), "You can not burn tokens from this address");
-    require(_msgSender() == adminAddress || _msgSender() == burnerAddress, "You do not have permission to mint new tokens");
 
     _balances[account] -= amount;
     _totalSupply -= amount;
@@ -110,15 +112,11 @@ contract Token is Context, TokenAccess {
   }
   
   function pause() external onlyPauser() {
-    require(_msgSender() == pauserAddress || _msgSender() == adminAddress, "You do not have permission to mint new tokens");
     _pause();
   }
 
-  
-
   function unPause() external onlyPauser()  {
-    require(_msgSender() == pauserAddress || _msgSender() == adminAddress, "You do not have permission to mint new tokens");
-    
+    _unPause();
   }
 
   function _pause() internal  {
@@ -126,18 +124,18 @@ contract Token is Context, TokenAccess {
 
     _paused = true;
 
-    emit PauseEvent(_msgSender());
+    emit PauseState(_msgSender(), true, block.timestamp);
   }
 
   function _unPause() internal  {
     require(_paused == true, 'The contract is not paused');
-    _paused = false;
 
-    emit PauseEvent(_msgSender());
+    _paused = false;
+    emit PauseState(_msgSender(), false, block.timestamp);
   }
 
   function _preTransferCheck() internal view {
-    require(_paused == false, 'The contract is paused. Token transfers are temporarily disabled');
+    require(!_paused == true, 'The contract is paused. Token transfers are temporarily disabled');
     this;
   }
 
