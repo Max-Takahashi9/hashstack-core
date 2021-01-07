@@ -2,19 +2,34 @@
 pragma solidity ^0.8.0;
 
 import ".././contracts/util/Context.sol";
-import ".././contracts/TokenAccess.sol";
+import "contracts/access/AccessControl.sol";
 
-contract Token is Context, TokenAccess {
+contract Token is Context{
 
-  string  public  _name;
-  string  public  _symbol;
-  uint256 public  _decimals;
+  AccessControl private access;
+
+  string  public  _name = "Open protocol";
+  string  public  _symbol = "OSO";
+  uint256 public  _decimals = 6;
 
   uint256 public _totalSupply; 
   uint256 public  _cappedSupply;
 
   bool public _paused;
   bool internal _reentrant = false;
+
+  
+  address private adminAddress;
+  bytes32 private adminToken;
+
+  address private minterAddress;
+  address private burnerAddress;
+  address private pauserAddress;
+
+  bytes32 private minter;
+  bytes32 private burner;
+  bytes32 private pauser;
+
 
   mapping(address => uint256) _balances; 
   mapping(address => mapping(address => uint256)) _allowances;
@@ -26,14 +41,27 @@ contract Token is Context, TokenAccess {
   event Minted(address indexed _from, address indexed _to, uint256 amount);
   event Burned(address indexed _from, address _to, uint256 amount);
 
-  constructor(string memory name_, uint256 decimals_, string memory symbol_, uint256 cappedSupply_, uint256 initialSupply_) TokenAccess(admin_, minter_, burner_,pauser_) {
-    _name = name_;
-    _symbol = symbol_;
-    _decimals = decimals_;
+  constructor(address admin_, address pauser_, address minter_, address burner_, uint256 initialSupply_, uint256 cappedSupply_)  {
+    _totalSupply = initialSupply_;
+    _cappedSupply = cappedSupply_;
+
+    _balances[adminAddress] = initialSupply_;
+
+    adminAddress = admin_;
+    minterAddress = minter_;
+    burnerAddress = burner_;
+    pauserAddress = pauser_;
+
+    access._addAdmin(adminToken, adminAddress);
+    access._addRole(minter, minterAddress);
+    access._addRole(burner, burnerAddress);
+    access._addRole(pauser, pauserAddress);
+
     _paused = false;
 
     _totalSupply = initialSupply_;
     _cappedSupply = cappedSupply_;
+
     _balances[adminAddress] = initialSupply_;
   }
 
@@ -144,5 +172,39 @@ contract Token is Context, TokenAccess {
     _reentrant = true;
     _;
     _reentrant = false;
+  }
+  function removeRole(bytes32 role, address account) external onlyAdmin(adminToken,adminAddress)  {
+    access._revokeRole(role, account);
+  }
+  function transferRole(bytes32 role, address oldAccount, address newAccount) external  {
+    access.transferRole(role,oldAccount,newAccount) ;
+  }
+
+  function renounceRole(bytes32 role, address oldAccount) external {
+    access.renounceRole(role, account);
+  }
+
+  function hasAdminRole(bytes32 role, address account) private view returns(bool) {
+    require(access.hasAdminRole(role, account), "Does not have an admin role.");
+  }
+
+  modifier onlyAdmin()  {
+    require(access.hasAdminRole(adminToken, adminAddress), "Role does not exist.");
+    _;
+  }
+
+  modifier onlyPauser()  {
+    require(access.hasRole(pauser, pauserAddress) || access.hasAdminRole(adminToken, adminAddress), "Role does not exist.");
+    _;
+  }
+
+  modifier onlyMinter() {
+    require(access.hasRole(minter, minterAddress) || access.hasAdminRole(adminToken, adminAddress), "Role does not exist.");
+    _;
+  }
+
+  modifier onlyBurner() {
+    require(access.hasRole(burner, burnerAddress) || access.hasAdminRole(adminToken, adminAddress), "Role does not exist.");
+    _;
   }
 }
