@@ -39,7 +39,7 @@ contract TokenAccess{
   }
 
   function renounceRole(bytes32 role, address oldAccount) external {
-    access.renounceRole(role, account);
+    access.renounceRole(role, oldAccount);
   }
 
   function hasAdminRole(bytes32 role, address account) private view returns(bool) {
