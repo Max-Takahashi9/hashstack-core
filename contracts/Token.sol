@@ -2,7 +2,8 @@
 pragma solidity ^0.8.0;
 
 import ".././contracts/util/Context.sol";
-import "contracts/access/AccessControl.sol";
+import ".././contracts/access/AccessControl.sol";
+// import "contracts/access/AccessControl.sol";
 
 contract Token is Context{
 
