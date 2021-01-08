@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 import ".././contracts/util/Context.sol";
-import ".././contracts/access/AccessControl.sol";
-// import "contracts/access/AccessControl.sol";
+// import ".././contracts/access/AccessControl.sol";
+import "contracts/access/AccessControl";
 
 contract Token is Context{
 
@@ -42,7 +42,7 @@ contract Token is Context{
   event Minted(address indexed _from, address indexed _to, uint256 amount);
   event Burned(address indexed _from, address _to, uint256 amount);
 
-  constructor(address admin_, address pauser_, address minter_, address burner_, uint256 initialSupply_, uint256 cappedSupply_)  {
+  constructor(address admin_, address pauser_, address minter_, address burner_, uint256 initialSupply_, uint256 cappedSupply_, AccessControl access_)  {
     _totalSupply = initialSupply_;
     _cappedSupply = cappedSupply_;
 
@@ -64,6 +64,8 @@ contract Token is Context{
     _cappedSupply = cappedSupply_;
 
     _balances[adminAddress] = initialSupply_;
+
+    access = access_;
   }
 
   fallback() external payable {
