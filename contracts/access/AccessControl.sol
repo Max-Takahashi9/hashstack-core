@@ -8,7 +8,7 @@ contract AccessControl is Context {
 
   using Address for address;
 
-  address private adminAddress;
+  address public adminAddress;
   bytes32 private adminAccess;
 
   struct RoleData  {
