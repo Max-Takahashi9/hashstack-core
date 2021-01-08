@@ -1,3 +1,3 @@
-# Open Finance
+# Open Protocol
 
-> This repository serves as an Index of the core contracts-powering the open finance defi ecosystem.
+> This repository is a home for core-contracts powering open protocol ecosystem.
