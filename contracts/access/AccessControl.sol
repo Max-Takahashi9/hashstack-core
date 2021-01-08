@@ -23,8 +23,8 @@ contract AccessControl is Context {
     bytes32[] _adminRoleList;
   }
 
-  mapping(bytes32 => RoleData) private _roles;
-  mapping(bytes32 => AdminRegistry) private _adminRoles;
+  mapping(address => RoleData) private _roles;
+  mapping(address => AdminRegistry) private _adminRoles;
 
 
   event AdminRoleGranted(bytes32 indexed role, address indexed account, address indexed sender);
@@ -39,7 +39,7 @@ contract AccessControl is Context {
   }
 
   function hasRole(bytes32 role, address account) external view returns(bool)  {
-    return _hasRole(role, account);(role, account);
+    return _hasRole(role, account);
   }
 
   function addRole(bytes32 role, address account) external onlyAdmin(adminAccess, adminAddress) {
@@ -88,74 +88,74 @@ contract AccessControl is Context {
   }
 
   function _hasRole(bytes32 role, address account) private view returns(bool)  {
-    if (_roles[role]._indexes[role] !=0)  {
+    if (_roles[account]._indexes[role] !=0)  {
       return true;
     }
     return false;
   }
   function _addRole(bytes32 role, address account) private {
 
-    _roles[role]._roleRegistry[role] = account;
-    _roles[role]._roleList.push(role);
-    _roles[role]._indexes[role] = _roles[role]._roleList.length;
+    _roles[account]._roleRegistry[role] = account;
+    _roles[account]._roleList.push(role);
+    _roles[account]._indexes[role] = _roles[account]._roleList.length;
 
     emit RoleGranted(role, account, _msgSender());
   }
   function _revokeRole(bytes32 role, address account) private {
 
-    delete _roles[role]._roleRegistry[role];
+    delete _roles[account]._roleRegistry[role];
 
-    uint256 _value = _roles[role]._indexes[role];
+    uint256 _value = _roles[account]._indexes[role];
     uint256 _toDeleteIndex = _value - 1;
 
-    uint256 _lastValue = _roles[role]._roleList.length;
+    uint256 _lastValue = _roles[account]._roleList.length;
     uint256 _lastValueIndex = _lastValue - 1;
 
-    bytes32 lastRole = _roles[role]._roleList[_lastValueIndex];
+    bytes32 lastRole = _roles[account]._roleList[_lastValueIndex];
 
-    _roles[role]._roleList[_toDeleteIndex] = lastRole; // Index assignment
-    _roles[role]._indexes[lastRole] = _toDeleteIndex+1;
+    _roles[account]._roleList[_toDeleteIndex] = lastRole; // Index assignment
+    _roles[account]._indexes[lastRole] = _toDeleteIndex+1;
 
-    _roles[role]._roleList.pop();
-    delete _roles[role]._indexes[role];
+    _roles[account]._roleList.pop();
+    delete _roles[account]._indexes[role];
 
     emit RoleRevoked(role, account, _msgSender());
 
   }
 
   function _hasAdminRole(bytes32 role, address account) private view returns(bool)  {
-    if(_adminRoles[role]._adminIndex[role]!=0)  {
-    // if (_adminRoles[role]._adminIndex[role]!=0)  {
+    if(_adminRoles[account]._adminIndex[role]!=0)  {
+    // if (_adminRoles[account]._adminIndex[role]!=0)  {
       return true;
     }
     return false;
   }
   function _addAdmin(bytes32 role, address account) private {
-    _adminRoles[role]._adminRegistry[role] = account;
-    _adminRoles[role]._adminRoleList.push(role);
+    _adminRoles[account]._adminRegistry[role] = account;
+    _adminRoles[account]._adminRoleList.push(role);
 
-    _adminRoles[role]._adminIndex[role] = _adminRoles[role]._adminRoleList.length;
+    _adminRoles[account]._adminIndex[role] = _adminRoles[account]._adminRoleList.length;
     
     emit AdminRoleGranted(role, account, _msgSender());
   }
   function _revokeAdmin(bytes32 role, address account) private {
 
-    delete _adminRoles[role]._adminRegistry[role];
+    delete _adminRoles[account]._adminRegistry[role];
 
-    uint256 _value = _adminRoles[role]._adminIndex[role];
+    uint256 _value = _adminRoles[account]._adminIndex[role];
     uint256 _toDeleteIndex = _value - 1;
 
-    uint256 _lastValue = _adminRoles[role]._adminRoleList.length;
+    uint256 _lastValue = _adminRoles[account]._adminRoleList.length;
     uint256 _lastValueIndex = _lastValue - 1;
 
-    bytes32 lastRole = _adminRoles[role]._adminRoleList[_lastValueIndex];
+    bytes32 lastRole = _adminRoles[account]._adminRoleList[_lastValueIndex];
 
-    _adminRoles[role]._adminRoleList[_toDeleteIndex] = lastRole; // Index assignment
+    _adminRoles[account]._adminRoleList[_toDeleteIndex] = lastRole; // Index assignment
 
-    _adminRoles[role]._adminIndex[lastRole] = _toDeleteIndex+1;
+    _adminRoles[account]._adminIndex[lastRole] = _toDeleteIndex+1;
 
-    _adminRoles[role]._adminRoleList.pop();
-    delete _adminRoles[role]._adminIndex[role];
+    _adminRoles[account]._adminRoleList.pop();
+    delete _adminRoles[account]._adminIndex[role];
 
     emit AdminRoleRevoked(role, account, _msgSender());
 
