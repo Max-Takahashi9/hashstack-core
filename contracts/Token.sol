@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import "contracts/utils/Context.sol";
-import "contracts/utils/Address.sol";
+import "contracts/util/Context.sol";
+import "contracts/util/Address.sol";
 
-contract OSOERC20 is Context {
+contract Token is Context {
     using Address for address;
 
     string public name;
