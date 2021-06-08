@@ -1,4 +1,4 @@
-# Open Protocol
+# Hashstack finance
 
-> This repository is a home for core-contracts powering open protocol ecosystem.
-> Whitepaper](https://open.so/Whitepaper_OpenProtocol_v0.1.pdf)
+> This repository is a home for core-contracts powering Hashstack ecosystem.
+> Whitepaper](to be updated soon)
